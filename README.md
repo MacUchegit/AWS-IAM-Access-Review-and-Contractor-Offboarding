@@ -1,4 +1,4 @@
-# Project Walkthrough
+# AWS IAM Access Review and Contractor Offboarding
 
 This guide explains both **what was done** and **why it matters**. It is written for
 a recruiter, a technical reviewer, or someone encountering AWS identity security
