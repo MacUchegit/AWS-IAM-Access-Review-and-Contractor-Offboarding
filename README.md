@@ -1,456 +1,398 @@
-# AWS-IAM-Access-Review-and-Contractor-Offboarding
+# Project Walkthrough
 
-Project Walkthrough
+This guide explains both **what was done** and **why it matters**. It is written for
+a recruiter, a technical reviewer, or someone encountering AWS identity security
+for the first time.
 
-This guide explains both what was done and why it matters. It is written fora recruiter, a technical reviewer, or someone encountering AWS identity securityfor the first time.
+## Scenario and scope
 
-Scenario and scope
+FinSecure Labs is a fictional financial-technology company with a private S3
+application bucket. A routine access review found three common problems:
 
-FinSecure Labs is a fictional financial-technology company with a private S3application bucket. A routine access review found three common problems:
+- the Developers group had broad S3 access;
+- a former contractor had an active programmatic access key;
+- a security-audit role trusted the entire AWS account.
 
-the Developers group had broad S3 access;
+The objective was to correct those risks without breaking the approved developer
+or auditor workflows, then retain evidence that the work occurred.
 
-a former contractor had an active programmatic access key;
+> Lab safety: use a dedicated AWS lab account. Do not deliberately weaken a
+> production account. Replace the fictional names if they conflict with existing
+> resources.
 
-a security-audit role trusted the entire AWS account.
+## Naming used in the lab
 
-The objective was to correct those risks without breaking the approved developeror auditor workflows, then retain evidence that the work occurred.
+| Resource | Lab name | Purpose |
+|---|---|---|
+| S3 bucket | `finsecure-app-data-<unique-suffix>` | Private application data |
+| IAM group | `Developers` | Developer permission assignment |
+| Developer users | `dev-alex`, `dev-sam` | Example human identities |
+| Contractor user | `contractor-jane` | Offboarding scenario |
+| Auditor user | `security-auditor` | Approved role user |
+| Broad S3 policy | `FinSecure-DeveloperBroadS3` | Deliberately risky baseline |
+| Restricted S3 policy | `FinSecure-DeveloperAppBucketOnly` | Least-privilege replacement |
+| Audit role | `SecurityAuditRole` | Temporary security-review permissions |
 
-Lab safety: use a dedicated AWS lab account. Do not deliberately weaken aproduction account. Replace the fictional names if they conflict with existingresources.
+Executable templates use `${ACCOUNT_ID}` and `${APP_BUCKET_NAME}`. In published
+screenshots and reports, identifiers are partly masked—for example,
+`0266XXXXXXXX`. A masked ID must never be pasted into a live policy.
 
-Naming used in the lab
+---
 
-Resource
+## Phase 1 — Establish the evidence baseline
 
-Lab name
+### Task 1: Enable CloudTrail management-event logging
 
-Purpose
+**Action**
 
-S3 bucket
+1. Open **CloudTrail → Trails → Create trail**.
+2. Use a clear name such as `finsecure-management-events`.
+3. Create or select a private S3 log bucket.
+4. Make the trail multi-Region.
+5. Include management events with both **Read** and **Write** activity.
+6. Confirm **Logging** is on.
 
-finsecure-app-data-<unique-suffix>
+**Reason**
 
-Private application data
+CloudTrail records API activity. Enabling it before the risky scenario is created
+means identity creation, permission changes, credential removal, and role use can
+all be traced later.
 
-IAM group
+![CloudTrail logging enabled](../evidence/screenshots/01-cloudtrail-logging-on.png)
 
-Developers
+*Figure 01 — The multi-Region trail is logging management events.*
 
-Developer permission assignment
+### Task 2: Enable an external-access analyzer
 
-Developer users
+**Action**
 
-dev-alex, dev-sam
+1. Open **IAM → Access Analyzer → Analyzers**.
+2. Create an **External access analyzer** for the current account.
+3. Wait for its status to become **Active**.
 
-Example human identities
+**Reason**
 
-Contractor user
+An external-access analyzer identifies supported resources that can be accessed
+from outside the account. It complements this project’s custom IAM checks.
 
-contractor-jane
+![Access Analyzer active](../evidence/screenshots/02-access-analyzer-active.png)
 
-Offboarding scenario
+*Figure 02 — The account-level external-access analyzer is active.*
 
-Auditor user
+---
 
-security-auditor
+## Phase 2 — Build a realistic risky starting point
 
-Approved role user
+### Task 3: Create a private application bucket
 
-Broad S3 policy
+**Action**
 
-FinSecure-DeveloperBroadS3
+1. Create an S3 bucket using a globally unique name.
+2. Keep **Block all public access** enabled.
+3. Enable default encryption.
+4. Upload a harmless sample file, such as `sample-transaction.csv`.
 
-Deliberately risky baseline
+**Reason**
 
-Restricted S3 policy
+The bucket gives the developer policy a real resource to protect. The scenario is
+about excessive identity permissions, not public S3 access, so the bucket remains
+private.
 
-FinSecure-DeveloperAppBucketOnly
+![Private application bucket](../evidence/screenshots/03-private-app-bucket.png)
 
-Least-privilege replacement
+*Figure 03 — The application bucket is private and encrypted. Partly mask the
+unique bucket suffix if it could identify the account.*
 
-Audit role
+### Task 4: Create the people and Developers group
 
-SecurityAuditRole
+**Action**
 
-Temporary security-review permissions
+1. Create the `Developers` IAM group.
+2. Create `dev-alex`, `dev-sam`, `security-auditor`, and `contractor-jane`.
+3. Add the two developer users to `Developers`.
+4. Do not create console passwords for identities that do not need console access.
 
-Executable templates use ${ACCOUNT_ID} and ${APP_BUCKET_NAME}. In publishedscreenshots and reports, identifiers are partly masked—for example,0266XXXXXXXX. A masked ID must never be pasted into a live policy.
+**Reason**
 
-Phase 1 — Establish the evidence baseline
+Groups make permission assignment easier to review than attaching the same policy
+to several users. The contractor and auditor are kept separate because they have
+different business purposes.
 
-Task 1: Secure the lab account
+![IAM users and group](../evidence/screenshots/04-iam-users-and-group.png)
 
-Action
+*Figure 04 — The example users exist and the developer users belong to the
+Developers group. Partly mask generated user IDs.*
 
-Sign in as the root user only for initial account setup.
+### Task 5: Attach an intentionally broad S3 policy
 
-Enable MFA for the root user.
+**Action**
 
-Confirm there are no root access keys.
+1. Review
+   [`policies/risky/developer-broad-s3.json`](../policies/risky/developer-broad-s3.json).
+2. Create `FinSecure-DeveloperBroadS3`.
+3. Attach it to the `Developers` group.
 
-Create an administrative identity for routine lab administration.
+**Reason**
 
-Sign out of root and use the administrative identity for the remaining work.
+The policy grants all S3 actions against all resources. That is a realistic
+least-privilege failure: application developers need one bucket, not every bucket
+in the account.
 
-Reason
+![Risky S3 policy](../evidence/screenshots/05-risky-s3-policy.png)
 
-The root user has unrestricted account control. Protecting it and avoiding dailyroot use reduces the impact of a stolen password.
+*Figure 05 — The risky policy contains `s3:*` and `Resource: *`. This lab-only
+misconfiguration establishes the baseline.*
 
+### Task 6: Create an overly broad audit-role trust policy
 
+**Action**
 
-Figure 01 — Root MFA is enabled and no root access keys exist. Hide the accountemail and any MFA device details.
+1. Substitute the real account number for `${ACCOUNT_ID}` in
+   [`trust-policies/before/security-audit-role.json`](../trust-policies/before/security-audit-role.json).
+2. Create `SecurityAuditRole` with that trust policy.
+3. Attach only the read-only permissions needed for the audit demonstration.
 
-Task 2: Add a cost budget
+**Reason**
 
-Action
+The initial trust policy allows any suitably authorized principal in the account
+to attempt role assumption. The remediation will narrow that trust to one named
+auditor and require MFA.
 
-Open Billing and Cost Management → Budgets.
+![Broad audit-role trust](../evidence/screenshots/06-broad-role-trust.png)
 
-Create a monthly cost budget for the lab, such as USD 5.
+*Figure 06 — The role trusts the account root principal, representing the entire
+account. The 10-digit account number is partly masked.*
 
-Add an email alert before the budget reaches 100%.
+### Task 7: Allow the intended auditor to request the role
 
-Reason
+**Action**
 
-Security labs should include cost control. A budget does not cap spending, but itprovides an early warning if a resource was left running.
+1. Substitute the real account number for `${ACCOUNT_ID}` in
+   [`policies/identity/allow-security-audit-role.json`](../policies/identity/allow-security-audit-role.json).
+2. Attach the policy to `security-auditor`.
 
+**Reason**
 
+Role assumption has two sides: the caller needs permission to call
+`sts:AssumeRole`, and the role must trust the caller. This policy handles the
+caller-permission side.
 
-Figure 02 — A small monthly lab budget and notification threshold are configured.Redact the notification email address.
+![Auditor AssumeRole permission](../evidence/screenshots/07-auditor-assumerole-policy.png)
 
-Task 3: Enable CloudTrail management-event logging
+*Figure 07 — The auditor may request only the named SecurityAuditRole.*
 
-Action
+### Task 8: Give the contractor a temporary lab access key
 
-Open CloudTrail → Trails → Create trail.
+**Action**
 
-Use a clear name such as finsecure-management-events.
+1. Create one access key for `contractor-jane`.
+2. Record only what is required to test the lab.
+3. Never publish the secret access key.
 
-Create or select a private S3 log bucket.
+**Reason**
 
-Make the trail multi-Region.
+Long-term keys are a common offboarding risk. The scanner should find this active
+credential, after which the remediation removes it.
 
-Include management events with both Read and Write activity.
+![Contractor active access key](../evidence/screenshots/08-contractor-active-key.png)
 
-Confirm Logging is on.
+*Figure 08 — The contractor has an active access key. Publish only a partly masked
+key ID such as `AKIAXXXXXXXXXXXXXXXX`; remove the secret completely.*
 
-Reason
+---
 
-CloudTrail records API activity. Enabling it before the risky scenario is createdmeans identity creation, permission changes, credential removal, and role use canall be traced later.
+## Phase 3 — Detect and prove the starting risk
 
+### Task 9: Authenticate the local workstation safely
 
+**Action**
 
-Figure 03 — The multi-Region trail is logging management events.
+1. Install AWS CLI v2.32.0 or later and Python 3.10 or later.
+2. Give the scan identity the actions in
+   [`policies/identity/iam-risk-scanner-read-only.json`](../policies/identity/iam-risk-scanner-read-only.json).
+3. Create or select the `finsecure-lab` AWS CLI profile.
+4. Use `aws login --profile finsecure-lab`, or `aws login --remote` when the browser
+   is on another device.
+5. Verify the caller:
 
-Task 4: Enable an external-access analyzer
+   ```bash
+   aws sts get-caller-identity --profile finsecure-lab
+   ```
 
-Action
+**Reason**
 
-Open IAM → Access Analyzer → Analyzers.
+`aws login` provides temporary credentials for local development. Temporary
+credentials are safer than putting a new long-term access key in a local
+credentials file.
 
-Create an External access analyzer for the current account.
+![Before-scan command](../evidence/screenshots/09-before-scan-cli.png)
 
-Wait for its status to become Active.
+*Figure 09 — The scanner runs from an authenticated local profile. Partly mask the
+account and principal identifiers in the terminal.*
 
-Reason
+### Task 10: Run the baseline scan
 
-An external-access analyzer identifies supported resources that can be accessedfrom outside the account. It complements this project’s custom IAM checks.
+**Action**
 
-
-
-Figure 04 — The account-level external-access analyzer is active.
-
-Phase 2 — Build a realistic risky starting point
-
-Task 5: Create a private application bucket
-
-Action
-
-Create an S3 bucket using a globally unique name.
-
-Keep Block all public access enabled.
-
-Enable default encryption.
-
-Upload a harmless sample file, such as sample-transaction.csv.
-
-Reason
-
-The bucket gives the developer policy a real resource to protect. The scenario isabout excessive identity permissions, not public S3 access, so the bucket remainsprivate.
-
-
-
-Figure 05 — The application bucket is private and encrypted. Partly mask theunique bucket suffix if it could identify the account.
-
-Task 6: Create the people and Developers group
-
-Action
-
-Create the Developers IAM group.
-
-Create dev-alex, dev-sam, security-auditor, and contractor-jane.
-
-Add the two developer users to Developers.
-
-Do not create console passwords for identities that do not need console access.
-
-Reason
-
-Groups make permission assignment easier to review than attaching the same policyto several users. The contractor and auditor are kept separate because they havedifferent business purposes.
-
-
-
-Figure 06 — The example users exist and the developer users belong to theDevelopers group. Partly mask generated user IDs.
-
-Task 7: Attach an intentionally broad S3 policy
-
-Action
-
-Reviewpolicies/risky/developer-broad-s3.json.
-
-Create FinSecure-DeveloperBroadS3.
-
-Attach it to the Developers group.
-
-Reason
-
-The policy grants all S3 actions against all resources. That is a realisticleast-privilege failure: application developers need one bucket, not every bucketin the account.
-
-
-
-Figure 07 — The risky policy contains s3:* and Resource: *. This lab-onlymisconfiguration establishes the baseline.
-
-Task 8: Create an overly broad audit-role trust policy
-
-Action
-
-Substitute the real account number for ${ACCOUNT_ID} intrust-policies/before/security-audit-role.json.
-
-Create SecurityAuditRole with that trust policy.
-
-Attach only the read-only permissions needed for the audit demonstration.
-
-Reason
-
-The initial trust policy allows any suitably authorized principal in the accountto attempt role assumption. The remediation will narrow that trust to one namedauditor and require MFA.
-
-
-
-Figure 08 — The role trusts the account root principal, representing the entireaccount. The 12-digit account number is partly masked.
-
-Task 9: Allow the intended auditor to request the role
-
-Action
-
-Substitute the real account number for ${ACCOUNT_ID} inpolicies/identity/allow-security-audit-role.json.
-
-Attach the policy to security-auditor.
-
-Reason
-
-Role assumption has two sides: the caller needs permission to callsts:AssumeRole, and the role must trust the caller. This policy handles thecaller-permission side.
-
-
-
-Figure 09 — The auditor may request only the named SecurityAuditRole.
-
-Task 10: Give the contractor a temporary lab access key
-
-Action
-
-Create one access key for contractor-jane.
-
-Record only what is required to test the lab.
-
-Never publish the secret access key.
-
-Reason
-
-Long-term keys are a common offboarding risk. The scanner should find this activecredential, after which the remediation removes it.
-
-
-
-Figure 10 — The contractor has an active access key. Publish only a partly maskedkey ID such as AKIAXXXXXXXXXXXXXXXX; remove the secret completely.
-
-Phase 3 — Detect and prove the starting risk
-
-Task 11: Authenticate the local workstation safely
-
-Action
-
-Install AWS CLI v2.32.0 or later and Python 3.10 or later.
-
-Give the scan identity the actions inpolicies/identity/iam-risk-scanner-read-only.json.
-
-Create or select the finsecure-lab AWS CLI profile.
-
-Use aws login --profile finsecure-lab, or aws login --remote when the browseris on another device.
-
-Verify the caller:
-
-aws sts get-caller-identity --profile finsecure-lab
-
-Reason
-
-aws login provides temporary credentials for local development. Temporarycredentials are safer than putting a new long-term access key in a localcredentials file.
-
-
-
-Figure 11 — The scanner runs from an authenticated local profile. Partly mask theaccount and principal identifiers in the terminal.
-
-Task 12: Run the baseline scan
-
-Action
-
+```bash
 pip install -r requirements.txt
 python iam_risk_scanner.py \
   --profile finsecure-lab \
   --output reports/before-scan.json
+```
 
-Compare the private output withreports/before-scan.example.json.
+Compare the private output with
+[`reports/before-scan.example.json`](../reports/before-scan.example.json).
 
-Expected result
+**Expected result**
 
-High: wildcard S3 permission policy;
+- High: wildcard S3 permission policy;
+- High: broad role trust;
+- Medium: active contractor access key.
 
-High: broad role trust;
+**Reason**
 
-Medium: active contractor access key.
+The baseline creates a measurable statement of risk before any remediation. A
+before/after comparison is stronger than claiming a policy “looks better.”
 
-Reason
+![Before-scan report](../evidence/screenshots/10-before-scan-report.png)
 
-The baseline creates a measurable statement of risk before any remediation. Abefore/after comparison is stronger than claiming a policy “looks better.”
+*Figure 10 — The redacted baseline report contains two High and one Medium
+finding.*
 
+### Task 11: Prove the intended auditor can use the role
 
+**Action**
 
-Figure 12 — The redacted baseline report contains two High and one Mediumfinding.
+From the auditor context, call `sts:AssumeRole` for `SecurityAuditRole` with a
+valid MFA code where required. Use the returned temporary credentials only for the
+approved audit test, then let them expire.
 
-Task 13: Prove the intended auditor can use the role
+**Reason**
 
-Action
+Testing the permitted path avoids a false sense of security. A control is useful
+only if it blocks unintended access while preserving legitimate work.
 
-From the auditor context, call sts:AssumeRole for SecurityAuditRole with avalid MFA code where required. Use the returned temporary credentials only for theapproved audit test, then let them expire.
+![Audit role session](../evidence/screenshots/11-audit-role-session.png)
 
-Reason
+*Figure 11 — `get-caller-identity` shows an assumed-role session. Remove temporary
+credentials and session tokens completely.*
 
-Testing the permitted path avoids a false sense of security. A control is usefulonly if it blocks unintended access while preserving legitimate work.
+### Task 12: Capture creation events in CloudTrail
 
+Capture `CreateUser`, `CreateAccessKey`, `CreatePolicy`, `AttachGroupPolicy`,
+`CreateRole`, and `AssumeRole`. The detailed procedure and captions are in
+[CLOUDTRAIL-EVIDENCE.md](CLOUDTRAIL-EVIDENCE.md), Figures 12–17.
 
+**Reason**
 
-Figure 13 — get-caller-identity shows an assumed-role session. Remove temporarycredentials and session tokens completely.
+These events prove how the risky baseline was created and that the role was
+actually used; they make the project reproducible and auditable.
 
-Task 14: Capture creation events in CloudTrail
+---
 
-Capture CreateUser, CreateAccessKey, CreatePolicy, AttachGroupPolicy,CreateRole, and AssumeRole. The detailed procedure and captions are inCLOUDTRAIL-EVIDENCE.md, Figures 14–19.
+## Phase 4 — Remediate the access risks
 
-Reason
+### Task 13: Replace broad S3 access with least privilege
 
-These events prove how the risky baseline was created and that the role wasactually used; they make the project reproducible and auditable.
+**Action**
 
-Phase 4 — Remediate the access risks
+1. Substitute the real bucket name for `${APP_BUCKET_NAME}` in
+   [`policies/remediated/developer-app-bucket-only.json`](../policies/remediated/developer-app-bucket-only.json).
+2. Create `FinSecure-DeveloperAppBucketOnly`.
+3. Attach it to `Developers`.
+4. Test the allowed application-bucket actions.
+5. Detach `FinSecure-DeveloperBroadS3`.
+6. Delete the broad policy after verifying it is no longer attached.
 
-Task 15: Replace broad S3 access with least privilege
+**Reason**
 
-Action
+The replacement separates bucket-level listing from object-level operations and
+uses specific ARNs. Attaching and testing the new policy before deleting the old
+one reduces the chance of an avoidable outage.
 
-Substitute the real bucket name for ${APP_BUCKET_NAME} inpolicies/remediated/developer-app-bucket-only.json.
+![Remediated S3 policy](../evidence/screenshots/18-remediated-s3-policy.png)
 
-Create FinSecure-DeveloperAppBucketOnly.
+*Figure 18 — Required S3 actions are limited to the application bucket and its
+objects.*
 
-Attach it to Developers.
+![Developers fixed policy](../evidence/screenshots/19-developers-fixed-policy.png)
 
-Test the allowed application-bucket actions.
+*Figure 19 — The Developers group has the replacement policy and no longer has the
+broad policy.*
 
-Detach FinSecure-DeveloperBroadS3.
+### Task 14: Offboard the contractor
 
-Delete the broad policy after verifying it is no longer attached.
+**Action**
 
-Reason
+1. Confirm `contractor-jane` is the intended lab identity.
+2. Change the access key status to **Inactive**.
+3. Confirm there is no dependency on the key.
+4. Delete the access key.
+5. Remove any attached or inline permissions.
+6. Delete the IAM user.
 
-The replacement separates bucket-level listing from object-level operations anduses specific ARNs. Attaching and testing the new policy before deleting the oldone reduces the chance of an avoidable outage.
+**Reason**
 
+Deactivation provides a safe verification point; deletion then removes the
+long-term credential permanently. Removing the user closes the abandoned identity
+path.
 
+![Contractor key inactive](../evidence/screenshots/20-contractor-key-inactive.png)
 
-Figure 20 — Required S3 actions are limited to the application bucket and itsobjects.
+*Figure 20 — The contractor key is inactive before deletion.*
 
+![Contractor user removed](../evidence/screenshots/21-contractor-user-removed.png)
 
+*Figure 21 — The contractor user no longer appears in the IAM user list.*
 
-Figure 21 — The Developers group has the replacement policy and no longer has thebroad policy.
+### Task 15: Restrict the audit role and require MFA
 
-Task 16: Offboard the contractor
+**Action**
 
-Action
+1. Substitute the real account number for `${ACCOUNT_ID}` in
+   [`trust-policies/after/security-audit-role.json`](../trust-policies/after/security-audit-role.json).
+2. Update the `SecurityAuditRole` trust relationship.
+3. Verify that the principal is only `security-auditor`.
+4. Verify that `aws:MultiFactorAuthPresent` must be `true`.
 
-Confirm contractor-jane is the intended lab identity.
+**Reason**
 
-Change the access key status to Inactive.
+The named principal removes account-wide trust. MFA adds a second proof of identity
+before a human can enter the security-audit role.
 
-Confirm there is no dependency on the key.
+![Restricted audit-role trust](../evidence/screenshots/22-restricted-role-trust.png)
 
-Delete the access key.
+*Figure 22 — Role trust is restricted to the named auditor and MFA.*
 
-Remove any attached or inline permissions.
+### Task 16: Retest the approved role workflow
 
-Delete the IAM user.
+**Action**
 
-Reason
+1. Confirm role assumption without MFA is denied.
+2. Confirm the intended auditor can assume the role with MFA.
+3. Run `aws sts get-caller-identity` inside the role session.
 
-Deactivation provides a safe verification point; deletion then removes thelong-term credential permanently. Removing the user closes the abandoned identitypath.
+**Reason**
 
+The expected denial proves the new condition is enforced; the expected success
+proves the legitimate workflow still works.
 
+![Audit role after remediation](../evidence/screenshots/23-audit-role-after.png)
 
-Figure 22 — The contractor key is inactive before deletion.
+*Figure 23 — The approved auditor successfully uses the restricted role with MFA.*
 
+---
 
+## Phase 5 — Validate, rescan, and preserve evidence
 
-Figure 23 — The contractor user no longer appears in the IAM user list.
+### Task 17: Validate the policies before and after
 
-Task 17: Restrict the audit role and require MFA
-
-Action
-
-Substitute the real account number for ${ACCOUNT_ID} intrust-policies/after/security-audit-role.json.
-
-Update the SecurityAuditRole trust relationship.
-
-Verify that the principal is only security-auditor.
-
-Verify that aws:MultiFactorAuthPresent must be true.
-
-Reason
-
-The named principal removes account-wide trust. MFA adds a second proof of identitybefore a human can enter the security-audit role.
-
-
-
-Figure 24 — Role trust is restricted to the named auditor and MFA.
-
-Task 18: Retest the approved role workflow
-
-Action
-
-Confirm role assumption without MFA is denied.
-
-Confirm the intended auditor can assume the role with MFA.
-
-Run aws sts get-caller-identity inside the role session.
-
-Reason
-
-The expected denial proves the new condition is enforced; the expected successproves the legitimate workflow still works.
-
-
-
-Figure 25 — The approved auditor successfully uses the restricted role with MFA.
-
-Phase 5 — Validate, rescan, and preserve evidence
-
-Task 19: Validate the policies before and after
-
-Action
+**Action**
 
 Use the IAM console policy editor’s validation or:
 
+```bash
 aws accessanalyzer validate-policy \
   --policy-type IDENTITY_POLICY \
   --policy-document file://policies/risky/developer-broad-s3.json
@@ -458,99 +400,104 @@ aws accessanalyzer validate-policy \
 aws accessanalyzer validate-policy \
   --policy-type IDENTITY_POLICY \
   --policy-document file://policies/remediated/developer-app-bucket-only.json
+```
 
-Record the real output in the two validation-report templates in reports/.
+Record the real output in the two validation-report templates in `reports/`.
 
-Reason
+**Reason**
 
-Access Analyzer validation provides an AWS-native review in addition to thecustom scanner. Validation findings are not the same as runtime authorization, soboth policy review and functional testing remain necessary.
+Access Analyzer validation provides an AWS-native review in addition to the
+custom scanner. Validation findings are not the same as runtime authorization, so
+both policy review and functional testing remain necessary.
 
+![Policy validation before](../evidence/screenshots/24-policy-validation-before.png)
 
+*Figure 24 — Validation findings for the risky baseline are recorded without
+altering the AWS response.*
 
-Figure 26 — Validation findings for the risky baseline are recorded withoutaltering the AWS response.
+![Policy validation after](../evidence/screenshots/25-policy-validation-after.png)
 
+*Figure 25 — The replacement policy’s validation result is recorded.*
 
+### Task 18: Run the final scan
 
-Figure 27 — The replacement policy’s validation result is recorded.
+**Action**
 
-Task 20: Run the final scan
-
-Action
-
+```bash
 python iam_risk_scanner.py \
   --profile finsecure-lab \
   --output reports/after-scan.json
+```
 
-Review the result before publishing. The example isreports/after-scan.example.json.
+Review the result before publishing. The example is
+[`reports/after-scan.example.json`](../reports/after-scan.example.json).
 
-Expected result
+**Expected result**
 
 The three scoped risks produce zero findings.
 
-Reason
+**Reason**
 
-The second scan is a control check: it verifies that the risky policy, broad trust,and active contractor key are no longer present.
+The second scan is a control check: it verifies that the risky policy, broad trust,
+and active contractor key are no longer present.
 
+![After-scan command](../evidence/screenshots/26-after-scan-cli.png)
 
+*Figure 26 — The final scanner run completes successfully.*
 
-Figure 28 — The final scanner run completes successfully.
+![After-scan report](../evidence/screenshots/27-after-scan-report.png)
 
+*Figure 27 — The final redacted report contains zero findings for the scanner’s
+defined scope.*
 
+### Task 19: Capture remediation events
 
-Figure 29 — The final redacted report contains zero findings for the scanner’sdefined scope.
+Capture `CreatePolicy`, `AttachGroupPolicy`, `DetachGroupPolicy`, `DeletePolicy`,
+`UpdateAssumeRolePolicy`, `UpdateAccessKey`, `DeleteAccessKey`, `DeleteUser`, and
+the successful post-remediation `AssumeRole`. See Figures 28–36 in
+[CLOUDTRAIL-EVIDENCE.md](CLOUDTRAIL-EVIDENCE.md).
 
-Task 21: Capture remediation events
+**Reason**
 
-Capture CreatePolicy, AttachGroupPolicy, DetachGroupPolicy, DeletePolicy,UpdateAssumeRolePolicy, UpdateAccessKey, DeleteAccessKey, DeleteUser, andthe successful post-remediation AssumeRole. See Figures 30–38 inCLOUDTRAIL-EVIDENCE.md.
+The event sequence proves that the safer policy was introduced, the risky policy
+was retired, the contractor was removed, and the role remained usable through the
+approved path.
 
-Reason
+### Task 20: Perform final acceptance checks
 
-The event sequence proves that the safer policy was introduced, the risky policywas retired, the contractor was removed, and the role remained usable through theapproved path.
+**Action**
 
-Task 22: Perform final acceptance checks
+1. Confirm the external-access analyzer has no unexplained findings.
+2. Confirm S3 Block Public Access is still on.
+3. Confirm the application bucket works for the approved developer actions.
+4. Confirm an unrelated bucket or forbidden action is denied.
+5. Confirm the audit role requires MFA.
+6. Confirm the contractor user and key no longer exist.
+7. Confirm the final scanner report and CloudTrail evidence are saved and redacted.
 
-Action
+![Final Access Analyzer review](../evidence/screenshots/37-access-analyzer-final.png)
 
-Confirm the external-access analyzer has no unexplained findings.
+*Figure 37 — Final external-access findings are reviewed and explained.*
 
-Confirm S3 Block Public Access is still on.
+![Final S3 public-access check](../evidence/screenshots/38-s3-block-public-access-final.png)
 
-Confirm the application bucket works for the approved developer actions.
+*Figure 38 — S3 Block Public Access remains enabled after IAM remediation.*
 
-Confirm an unrelated bucket or forbidden action is denied.
-
-Confirm the audit role requires MFA.
-
-Confirm the contractor user and key no longer exist.
-
-Confirm the final scanner report and CloudTrail evidence are saved and redacted.
-
-
-
-Figure 39 — Final external-access findings are reviewed and explained.
-
-
-
-Figure 40 — S3 Block Public Access remains enabled after IAM remediation.
-
-Definition of done
+## Definition of done
 
 The project is complete when:
 
-the three baseline risks can be explained in business terms;
+- the three baseline risks can be explained in business terms;
+- the before report is preserved;
+- each remediation has a least-privilege reason;
+- allowed and denied behavior has been tested;
+- the final scanner returns no in-scope findings;
+- CloudTrail records the key actions;
+- all published evidence passes the redaction checklist.
 
-the before report is preserved;
+## Cleanup
 
-each remediation has a least-privilege reason;
-
-allowed and denied behavior has been tested;
-
-the final scanner returns no in-scope findings;
-
-CloudTrail records the key actions;
-
-all published evidence passes the redaction checklist.
-
-Cleanup
-
-After exporting approved evidence, delete lab-only identities and keys first, thenpolicies and roles, followed by empty S3 buckets and other temporary resources.Review the bill and confirm no unexpected resource remains. Keep a trail or logarchive only if its ongoing storage and protection are intentional.
+After exporting approved evidence, delete lab-only identities and keys first, then
+policies and roles, followed by empty S3 buckets and other temporary resources.
+Review the bill and confirm no unexpected resource remains. Keep a trail or log
+archive only if its ongoing storage and protection are intentional.
