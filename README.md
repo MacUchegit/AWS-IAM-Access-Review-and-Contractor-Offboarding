@@ -31,7 +31,7 @@ or auditor workflows, then retain evidence that the work occurred.
 |---|---|---|
 | S3 bucket | `finsecure-app-data-<unique-suffix>` | Private application data |
 | IAM group | `Developers` | Developer permission assignment |
-| Developer users | `dev-alex`, `dev-sam` | Example human identities |
+| Developer user | `dev-alex` | Example developer identity |
 | Contractor user | `contractor-jane` | Offboarding scenario |
 | Auditor user | `security-auditor` | Approved role user |
 | Broad S3 policy | `FinSecure-DeveloperBroadS3` | Deliberately risky baseline |
@@ -108,25 +108,25 @@ private.
 *Figure 03 — The application bucket is private and encrypted. Partly mask the
 unique bucket suffix if it could identify the account.*
 
-### Task 4: Create the people and Developers group
+### Task 4: Create the identities and Developers group
 
 **Action**
 
 1. Create the `Developers` IAM group.
-2. Create `dev-alex`, `dev-sam`, `security-auditor`, and `contractor-jane`.
-3. Add the two developer users to `Developers`.
+2. Create `dev-alex`, `security-auditor`, and `contractor-jane`.
+3. Add `dev-alex` to `Developers`.
 4. Do not create console passwords for identities that do not need console access.
 
 **Reason**
 
-Groups make permission assignment easier to review than attaching the same policy
-to several users. The contractor and auditor are kept separate because they have
-different business purposes.
+The group keeps developer permissions separate and makes later policy changes
+easy to review. The contractor and auditor remain outside the group because they
+have different business purposes.
 
 ![IAM users and group](../evidence/screenshots/04-iam-users-and-group.png)
 
-*Figure 04 — The example users exist and the developer users belong to the
-Developers group. Partly mask generated user IDs.*
+*Figure 04 — The three lab users exist, and `dev-alex` belongs to the Developers
+group. Partly mask generated user IDs.*
 
 ### Task 5: Attach an intentionally broad S3 policy
 
@@ -140,10 +140,10 @@ Developers group. Partly mask generated user IDs.*
 **Reason**
 
 The policy grants all S3 actions against all resources. That is a realistic
-least-privilege failure: application developers need one bucket, not every bucket
-in the account.
+least-privilege failure: the application developer needs one bucket, not every
+bucket in the account.
 
-![Risky S3 policy](../evidence/screenshots/05-risky-s3-policy.png)
+<img width="1184" height="724" alt="dev-initial-policy" src="https://github.com/user-attachments/assets/9113ff96-767f-440c-8930-0bfe57afc9a9" />
 
 *Figure 05 — The risky policy contains `s3:*` and `Resource: *`. This lab-only
 misconfiguration establishes the baseline.*
@@ -163,7 +163,7 @@ The initial trust policy allows any suitably authorized principal in the account
 to attempt role assumption. The remediation will narrow that trust to one named
 auditor and require MFA.
 
-![Broad audit-role trust](../evidence/screenshots/06-broad-role-trust.png)
+<img width="1412" height="631" alt="security-audit-role2" src="https://github.com/user-attachments/assets/e57c0fc5-7c20-434a-a872-48dec845bc1c" />
 
 *Figure 06 — The role trusts the account root principal, representing the entire
 account. The 10-digit account number is partly masked.*
@@ -182,7 +182,7 @@ Role assumption has two sides: the caller needs permission to call
 `sts:AssumeRole`, and the role must trust the caller. This policy handles the
 caller-permission side.
 
-![Auditor AssumeRole permission](../evidence/screenshots/07-auditor-assumerole-policy.png)
+<img width="1409" height="418" alt="security-audit-role3" src="https://github.com/user-attachments/assets/1167e250-21e9-4713-9ca8-faed608eaae1" />
 
 *Figure 07 — The auditor may request only the named SecurityAuditRole.*
 
@@ -199,7 +199,8 @@ caller-permission side.
 Long-term keys are a common offboarding risk. The scanner should find this active
 credential, after which the remediation removes it.
 
-![Contractor active access key](../evidence/screenshots/08-contractor-active-key.png)
+<img width="1381" height="537" alt="contractor-access-keys" src="https://github.com/user-attachments/assets/e23366d2-211b-42be-a0d5-2f2dbd16d3ce" />
+
 
 *Figure 08 — The contractor has an active access key. Publish only a partly masked
 key ID such as `AKIAXXXXXXXXXXXXXXXX`; remove the secret completely.*
