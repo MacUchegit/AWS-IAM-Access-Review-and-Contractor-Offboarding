@@ -248,7 +248,8 @@ python iam_risk_scanner.py \
 ```
 
 Compare the private output with
-[`reports/before-scan.example.json`](../reports/before-scan.example.json).
+
+<img width="970" height="405" alt="python-run" src="https://github.com/user-attachments/assets/cbe20be4-0887-4e28-a351-b21e71c6f4b9" />
 
 **Expected result**
 
@@ -261,7 +262,7 @@ Compare the private output with
 The baseline creates a measurable statement of risk before any remediation. A
 before/after comparison is stronger than claiming a policy “looks better.”
 
-![Before-scan report](../evidence/screenshots/10-before-scan-report.png)
+<img width="1101" height="738" alt="before1" src="https://github.com/user-attachments/assets/f1ee9a96-1b65-4917-bd85-9c6cc2928c61" />
 
 *Figure 10 — The redacted baseline report contains two High and one Medium
 finding.*
@@ -279,7 +280,7 @@ approved audit test, then let them expire.
 Testing the permitted path avoids a false sense of security. A control is useful
 only if it blocks unintended access while preserving legitimate work.
 
-![Audit role session](../evidence/screenshots/11-audit-role-session.png)
+<img width="930" height="473" alt="security-audit-role-achieved" src="https://github.com/user-attachments/assets/8eed5623-a851-482b-a3d0-6da9ca1f2fd0" />
 
 *Figure 11 — `get-caller-identity` shows an assumed-role session. Remove temporary
 credentials and session tokens completely.*
@@ -317,12 +318,13 @@ The replacement separates bucket-level listing from object-level operations and
 uses specific ARNs. Attaching and testing the new policy before deleting the old
 one reduces the chance of an avoidable outage.
 
-![Remediated S3 policy](../evidence/screenshots/18-remediated-s3-policy.png)
+<img width="1151" height="738" alt="dev-remediated-policy" src="https://github.com/user-attachments/assets/b1ebb687-7d44-4e6b-946c-739cc627e845" />
 
 *Figure 18 — Required S3 actions are limited to the application bucket and its
 objects.*
 
-![Developers fixed policy](../evidence/screenshots/19-developers-fixed-policy.png)
+<img width="1021" height="560" alt="dev-remediated-group" src="https://github.com/user-attachments/assets/9f48beef-94b8-470a-b442-07f7531c9b1b" />
+
 
 *Figure 19 — The Developers group has the replacement policy and no longer has the
 broad policy.*
@@ -344,11 +346,14 @@ Deactivation provides a safe verification point; deletion then removes the
 long-term credential permanently. Removing the user closes the abandoned identity
 path.
 
-![Contractor key inactive](../evidence/screenshots/20-contractor-key-inactive.png)
+<img width="986" height="269" alt="contractor-access-keys-inactive" src="https://github.com/user-attachments/assets/615c2bf4-51a7-4ada-b705-66a78337dbd1" />
+
 
 *Figure 20 — The contractor key is inactive before deletion.*
 
-![Contractor user removed](../evidence/screenshots/21-contractor-user-removed.png)
+<img width="982" height="520" alt="contractor-offboarded" src="https://github.com/user-attachments/assets/6897980b-02d2-48f6-95b4-8eb097fef616" />
+<img width="1447" height="345" alt="user-contractor-deleted" src="https://github.com/user-attachments/assets/a8ac7328-815f-497c-9b16-e166776a79bb" />
+
 
 *Figure 21 — The contractor user no longer appears in the IAM user list.*
 
@@ -367,7 +372,7 @@ path.
 The named principal removes account-wide trust. MFA adds a second proof of identity
 before a human can enter the security-audit role.
 
-![Restricted audit-role trust](../evidence/screenshots/22-restricted-role-trust.png)
+<img width="875" height="426" alt="security-audit-role-remediated" src="https://github.com/user-attachments/assets/bdd016a1-310f-415f-9c73-9ac777cf322e" />
 
 *Figure 22 — Role trust is restricted to the named auditor and MFA.*
 
@@ -384,7 +389,7 @@ before a human can enter the security-audit role.
 The expected denial proves the new condition is enforced; the expected success
 proves the legitimate workflow still works.
 
-![Audit role after remediation](../evidence/screenshots/23-audit-role-after.png)
+<img width="930" height="473" alt="security-audit-role-achieved" src="https://github.com/user-attachments/assets/77cfe187-9eeb-4e93-8f93-d30e59ddc47c" />
 
 *Figure 23 — The approved auditor successfully uses the restricted role with MFA.*
 
