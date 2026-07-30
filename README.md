@@ -1,4 +1,4 @@
-# AWS IAM Access Review and Contractor Offboarding
+ AWS IAM Access Review and Contractor Offboarding
 
 This guide explains both **what was done** and **why it matters**. It is written for
 a recruiter, a technical reviewer, or someone encountering AWS identity security
@@ -108,8 +108,8 @@ have different business purposes.
 <img width="1453" height="453" alt="user-complete" src="https://github.com/user-attachments/assets/6e93c4a1-f8ac-4a72-983d-00296a6a4c98" />
 
 
-*Figure 03 — The three lab users exist (Including the IAM-Admin user), and `dev-alex` belongs to the Developers
-group.*
+*Figure 03 — The project identities and the lab-administration identity are
+visible, and `dev-alex` belongs to the Developers group.*
 
 ### Task 4: Attach an intentionally broad S3 policy
 
@@ -184,7 +184,7 @@ credential, after which the remediation removes it.
 <img width="1381" height="537" alt="contractor-access-keys" src="https://github.com/user-attachments/assets/e23366d2-211b-42be-a0d5-2f2dbd16d3ce" />
 
 
-*Figure 07 — The contractor has an active access key*
+*Figure 07 — The contractor has an active access key.*
 
 ---
 
@@ -211,7 +211,7 @@ credential exposure.
 
 <img width="970" height="213" alt="python-run1" src="https://github.com/user-attachments/assets/44e232d8-8e64-4c98-a822-fc4e9871d31a" />
 
-*Figure 08 — The scanner runs from an authenticated local profile*
+*Figure 08 — The scanner runs from an authenticated local profile.*
 
 ### Task 9: Run the baseline scan
 
@@ -223,6 +223,9 @@ python iam_risk_scanner.py --profile finsecure-lab --output reports/before-scan.
 ```
 
 <img width="970" height="405" alt="python-run" src="https://github.com/user-attachments/assets/cbe20be4-0887-4e28-a351-b21e71c6f4b9" />
+
+*Figure 09 — The baseline Python scanner completes and writes the
+before-remediation report.*
 
 **Expected result**
 
@@ -237,42 +240,27 @@ before/after comparison is stronger than claiming a policy “looks better.”
 
 <img width="1101" height="738" alt="before1" src="https://github.com/user-attachments/assets/f1ee9a96-1b65-4917-bd85-9c6cc2928c61" />
 
-*Figure 09 — The redacted baseline report contains two High and one Medium
+*Figure 10 — The redacted baseline report contains two High and one Medium
 finding.*
 
-### Task 10: Prove the intended auditor can use the role
 
-**Action**
-
-From the auditor context, call `sts:AssumeRole` for `SecurityAuditRole` with a
-valid MFA code where required. Use the returned temporary credentials only for the
-approved audit test, then let them expire.
-
-**Reason**
-
-Testing the permitted path avoids a false sense of security. A control is useful
-only if it blocks unintended access while preserving legitimate work.
-
-<img width="930" height="473" alt="security-audit-role-achieved" src="https://github.com/user-attachments/assets/8eed5623-a851-482b-a3d0-6da9ca1f2fd0" />
-
-*Figure 10 — `get-caller-identity` shows an assumed-role session.*
-
-### Task 11: Capture creation events in CloudTrail
+### Task 10: Capture creation events in CloudTrail
 
 Capture `CreateUser`, `CreateAccessKey`, `CreatePolicy`, `AttachGroupPolicy`,
-`CreateRole`, and `AssumeRole`. The detailed procedure and screenshot captions
-are in [CLOUDTRAIL-EVIDENCE.md](https://github.com/MacUchegit/AWS-IAM-Access-Review-and-Contractor-Offboarding/blob/c3edfc98993ede9da28b37007889d9536c25be70/CLOUDTRAIL-EVIDENCE.md).
+and `CreateRole`. The detailed procedure and screenshot captions are in
+[CLOUDTRAIL-EVIDENCE.md](CLOUDTRAIL-EVIDENCE.md).
 
 **Reason**
 
-These events prove how the risky baseline was created and that the role was
-actually used; they make the project reproducible and auditable.
+These events prove how the risky baseline was created and make the project
+reproducible and auditable. The approved role-use event is captured after the
+role workflow is tested later in the project.
 
 ---
 
 ## Phase 4 — Remediate the access risks
 
-### Task 12: Replace broad S3 access with least privilege
+### Task 11: Replace broad S3 access with least privilege
 
 **Action**
 
@@ -291,16 +279,16 @@ one reduces the chance of an avoidable outage.
 
 <img width="1151" height="738" alt="dev-remediated-policy" src="https://github.com/user-attachments/assets/b1ebb687-7d44-4e6b-946c-739cc627e845" />
 
-*Figure 17 — Required S3 actions are limited to the application bucket and its
+*Figure 11 — Required S3 actions are limited to the application bucket and its
 objects.*
 
 <img width="1021" height="560" alt="dev-remediated-group" src="https://github.com/user-attachments/assets/9f48beef-94b8-470a-b442-07f7531c9b1b" />
 
 
-*Figure 18 — The Developers group has the replacement policy and no longer has the
+*Figure 12 — The Developers group has the replacement policy and no longer has the
 broad policy.*
 
-### Task 13: Offboard the contractor
+### Task 12: Offboard the contractor
 
 **Action**
 
@@ -320,15 +308,19 @@ path.
 <img width="986" height="269" alt="contractor-access-keys-inactive" src="https://github.com/user-attachments/assets/615c2bf4-51a7-4ada-b705-66a78337dbd1" />
 
 
-*Figure 19 — The contractor key is inactive before deletion.*
+*Figure 13 — The contractor key is inactive before deletion.*
 
 <img width="982" height="520" alt="contractor-offboarded" src="https://github.com/user-attachments/assets/6897980b-02d2-48f6-95b4-8eb097fef616" />
+
+*Figure 14 — The contractor access-key list confirms that the long-term
+credential has been removed.*
+
 <img width="1447" height="345" alt="user-contractor-deleted" src="https://github.com/user-attachments/assets/a8ac7328-815f-497c-9b16-e166776a79bb" />
 
 
-*Figure 20 — The contractor user no longer appears in the IAM user list.*
+*Figure 15 — The contractor user no longer appears in the IAM user list.*
 
-### Task 14: Restrict the audit role and require MFA
+### Task 13: Restrict the audit role and require MFA
 
 **Action**
 
@@ -344,9 +336,9 @@ before a human can enter the security-audit role.
 
 <img width="1074" height="744" alt="denied-role-access" src="https://github.com/user-attachments/assets/4ca303f1-e777-4b5b-b7b5-a9c05488a6ff" />
 
-*Figure 21 — Role trust is restricted to the named auditor and MFA.*
+*Figure 16 — Role trust is restricted to the named auditor and MFA.*
 
-### Task 15: Retest the approved role workflow
+### Task 14: Retest the approved role workflow
 
 **Action**
 
@@ -361,7 +353,7 @@ proves the legitimate workflow still works.
 
 <img width="875" height="426" alt="security-audit-role-remediated" src="https://github.com/user-attachments/assets/bdd016a1-310f-415f-9c73-9ac777cf322e" />
 
-*Figure 22 — The approved auditor successfully uses the restricted role with MFA.*
+*Figure 17 — The approved auditor successfully uses the restricted role with MFA.*
 
 ---
 
@@ -371,7 +363,7 @@ The Python IAM risk scanner is the project’s automated validation control. It
 first established the risky baseline, then verified that the same risks were no
 longer present after remediation.
 
-### Task 16: Run the final scan
+### Task 15: Run the final scan
 
 **Action**
 
@@ -379,8 +371,8 @@ longer present after remediation.
 python iam_risk_scanner.py --profile finsecure-lab --output reports/after-scan.json
 ```
 
-Review the result before publishing. The example is
-[`reports/after-scan.example.json`](https://github.com/MacUchegit/AWS-IAM-Access-Review-and-Contractor-Offboarding/blob/main/before-scan.json).
+Review and redact the actual
+[`after-scan.json`](after-scan.json) result before publishing.
 
 **Expected result**
 
@@ -393,20 +385,20 @@ and active contractor key are no longer present.
 
 <img width="996" height="155" alt="python-run-after" src="https://github.com/user-attachments/assets/6aed3d72-8a11-4279-b5ce-dc1afd8f99e2" />
 
-*Figure 23 — The final scanner run completes successfully.*
+*Figure 18 — The final scanner run completes successfully.*
 
 <img width="819" height="331" alt="after1" src="https://github.com/user-attachments/assets/2af4966d-fbb2-45a4-a7af-c177b2b24032" />
 
-*Figure 24 — The final redacted report contains zero findings for the scanner’s
+*Figure 19 — The final redacted report contains zero findings for the scanner’s
 defined scope.*
 
-### Task 17: Capture remediation events
+### Task 16: Capture remediation events
 
 Capture `CreatePolicy`, `AttachGroupPolicy`, `DetachGroupPolicy`, `DeletePolicy`,
 `UpdateAssumeRolePolicy`, `UpdateAccessKey`, `DeleteAccessKey`, `DeleteUser`, and
 the successful post-remediation `AssumeRole`. The detailed procedure and
 screenshot captions are in
-[CLOUDTRAIL-EVIDENCE.md](https://github.com/MacUchegit/AWS-IAM-Access-Review-and-Contractor-Offboarding/blob/c3edfc98993ede9da28b37007889d9536c25be70/CLOUDTRAIL-EVIDENCE.md).
+[CLOUDTRAIL-EVIDENCE.md](CLOUDTRAIL-EVIDENCE.md).
 
 **Reason**
 
@@ -414,20 +406,6 @@ The event sequence proves that the safer policy was introduced, the risky policy
 was retired, the contractor was removed, and the role remained usable through the
 approved path.
 
-### Task 18: Perform final acceptance checks
-
-**Action**
-
-1. Confirm S3 Block Public Access is still on.
-2. Confirm the application bucket works for the approved developer actions.
-3. Confirm an unrelated bucket or forbidden action is denied.
-4. Confirm the audit role requires MFA.
-5. Confirm the contractor user and key no longer exist.
-6. Confirm the final scanner report and CloudTrail evidence are saved and redacted.
-
-![Final S3 public-access check](../evidence/screenshots/38-s3-block-public-access-final.png)
-
-*Figure 34 — S3 Block Public Access remains enabled after IAM remediation.*
 
 ## Definition of done
 
