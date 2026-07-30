@@ -33,12 +33,12 @@ ongoing copy in Amazon S3.
 | CT-02 | `CreatePolicy` | The restricted replacement policy was created | Captured |
 | CT-03 | `AttachGroupPolicy` | The replacement policy was applied to the developer group | Captured |
 | CT-04 | `DetachGroupPolicy` | The broad policy stopped affecting the group | Captured |
-| CT-05 | `DeletePolicy` | The obsolete broad policy was removed | Recapture recommended |
-| CT-06 | `UpdateAssumeRolePolicy` | The audit-role trust boundary was changed | Recapture recommended |
+| CT-05 | `DeletePolicy` | The obsolete broad policy was removed | Captured |
+| CT-06 | `UpdateAssumeRolePolicy` | The audit-role trust boundary was changed | Captured |
 | CT-07 | `UpdateAccessKey` | The contractor key was disabled first | Captured |
 | CT-08 | `DeleteAccessKey` | The contractor key was permanently removed | Captured |
 | CT-09 | `DeleteUser` | The former contractor identity was deleted | Captured |
-| CT-10 | `AssumeRole` | The intended auditor could still use the secured role | Correct event required |
+| CT-10 | `AssumeRole` | The intended auditor could still use the secured role | Captured |
 
 ---
 
@@ -64,7 +64,7 @@ events are missed because an action occurred in another Region.
 - log-file validation;
 - encryption configuration.
 
-![CloudTrail trail configuration](../evidence/screenshots/ct-01-cloudtrail-configuration.png)
+<img width="1454" height="490" alt="cloudtrail" src="https://github.com/user-attachments/assets/f5d956df-b125-488e-af7d-78c8af9654ff" />
 
 *Figure CT-01 — The multi-Region CloudTrail trail is configured to preserve
 management-event evidence with log-file validation and KMS encryption. Account,
@@ -99,7 +99,7 @@ approved developer workflow.
 - initiating identity;
 - `policyName: FinSecure-DeveloperAppBucketOnly`.
 
-![CreatePolicy remediation event](../evidence/screenshots/ct-02-create-policy-remediation.png)
+<img width="819" height="370" alt="cloudtrail1" src="https://github.com/user-attachments/assets/3c17516c-751b-4a25-9139-77cc9f55740b" />
 
 *Figure CT-02 — CloudTrail records creation of the least-privilege
 `FinSecure-DeveloperAppBucketOnly` policy and attributes the action to the lab
@@ -132,7 +132,7 @@ proves that the replacement policy was actually applied to the group.
 - policy ARN ending in `FinSecure-DeveloperAppBucketOnly`;
 - initiating identity and event time.
 
-![AttachGroupPolicy remediation event](../evidence/screenshots/ct-03-attach-replacement-policy.png)
+<img width="1222" height="622" alt="cloudtrail2" src="https://github.com/user-attachments/assets/e30049a9-8c81-421d-bf21-ebd448ac8542" />
 
 *Figure CT-03 — CloudTrail confirms that the least-privilege policy was attached
 to the developer group, changing the permissions inherited by `dev-alex`.*
@@ -164,7 +164,7 @@ to the group. It is direct evidence of least-privilege remediation.
 - policy ARN ending in `FinSecure-DeveloperBroadS3`;
 - initiating identity and event time.
 
-![DetachGroupPolicy remediation event](../evidence/screenshots/ct-04-detach-broad-policy.png)
+<img width="1161" height="701" alt="cloudtrail3" src="https://github.com/user-attachments/assets/b9226874-1456-4c21-997d-59ed38662dd6" />
 
 *Figure CT-04 — CloudTrail confirms that
 `FinSecure-DeveloperBroadS3` was detached from the developer group, ending its
@@ -196,7 +196,7 @@ accidentally attach it to another user, group, or role later.
 - initiating identity;
 - event time.
 
-![DeletePolicy remediation event](../evidence/screenshots/ct-05-delete-broad-policy.png)
+<img width="1215" height="574" alt="cloudtrail4" src="https://github.com/user-attachments/assets/e0c2d223-184b-43d0-ad7f-f91465842020" />
 
 *Figure CT-05 — CloudTrail records deletion of the obsolete
 `FinSecure-DeveloperBroadS3` policy after it was safely detached.*
@@ -234,7 +234,7 @@ boundary was deliberately tightened.
 - initiating identity;
 - event time.
 
-![UpdateAssumeRolePolicy event](../evidence/screenshots/ct-06-update-audit-role-trust.png)
+<img width="1298" height="533" alt="cloudtrail5" src="https://github.com/user-attachments/assets/4bf8d231-be61-4ef6-b905-e48c99848d99" />
 
 *Figure CT-06 — CloudTrail records the trust-policy update that restricted
 `SecurityAuditRole` to the approved auditor workflow.*
@@ -272,7 +272,7 @@ brief verification point before irreversible deletion.
 - a partially masked access-key ID;
 - event time.
 
-![UpdateAccessKey remediation event](../evidence/screenshots/ct-07-disable-contractor-key.png)
+<img width="868" height="348" alt="cloudtrail6" src="https://github.com/user-attachments/assets/39d30799-33c9-477e-8c71-059f96bac74f" />
 
 *Figure CT-07 — CloudTrail records that the former contractor's access key was
 changed to `Inactive` before deletion. The access-key ID is partially masked.*
@@ -303,7 +303,7 @@ completes the credential-removal stage of offboarding.
 - a partially masked access-key ID;
 - event time.
 
-![DeleteAccessKey remediation event](../evidence/screenshots/ct-08-delete-contractor-key.png)
+<img width="958" height="352" alt="cloudtrail7" src="https://github.com/user-attachments/assets/e0cfad05-56ee-44c7-9903-7a1efc6edd1f" />
 
 *Figure CT-08 — CloudTrail confirms permanent deletion of the former
 contractor's long-term access key. The key ID is partially masked and no secret
@@ -336,7 +336,7 @@ from being reused later without going through a new approved onboarding process.
 - initiating identity;
 - event time.
 
-![DeleteUser remediation event](../evidence/screenshots/ct-09-delete-contractor-user.png)
+<img width="755" height="260" alt="cloudtrail8" src="https://github.com/user-attachments/assets/d9b897cf-b9f3-46d3-9db7-e1d5a5bc82ce" />
 
 *Figure CT-09 — CloudTrail confirms deletion of the former contractor's IAM
 identity after its access key and permission dependencies were removed.*
@@ -371,7 +371,7 @@ available.
 - successful response with no error code;
 - MFA context where it is visible.
 
-![SecurityAuditRole AssumeRole event](../evidence/screenshots/ct-10-security-auditor-assume-role.png)
+<img width="1049" height="713" alt="cloudtrail9" src="https://github.com/user-attachments/assets/5e38587c-9515-439f-a478-ee3dce54d1f9" />
 
 *Figure CT-10 — CloudTrail records the approved auditor successfully assuming
 `SecurityAuditRole` after its trust policy was restricted. Account identifiers,
@@ -401,41 +401,3 @@ session tokens are removed completely.*
 7. Capture the event name, caller, event time, role ARN, and role-session name.
 8. Remove the complete `responseElements.credentials.sessionToken` value before
    publishing.
-
----
-
-## Pre-publication redaction checklist
-
-Before uploading any evidence to GitHub:
-
-- partially mask the 12-digit AWS account ID, for example
-  `0266XXXXXXXX`;
-- partially mask principal IDs and access-key IDs;
-- partially mask identifying S3 bucket suffixes and KMS key IDs;
-- partially mask the public source IP address, for example
-  `102.88.XXX.XXX`;
-- remove secret access keys, session tokens, MFA codes, cookies, and
-  authorization headers completely;
-- leave the event name, event time, policy name, group name, role name, user
-  name, and security-relevant request parameters visible;
-- verify that every caption describes the exact event shown.
-
-Opaque redaction should be applied to the image itself before it is uploaded.
-Do not rely on a removable annotation layer.
-
-## Evidence integrity notes
-
-- CloudTrail Event history covers recent management events and is separate from
-  the ongoing S3 delivery configured by a trail.
-- The evidence records actions; it does not replace permission testing or the
-  Python IAM risk scanner.
-- A successful event should not show an `errorCode` or `errorMessage`.
-- IAM names are case-sensitive in the evidence. Use the exact AWS resource names
-  consistently throughout the walkthrough, architecture, captions, and
-  screenshots.
-
-## AWS references
-
-- [Logging IAM and AWS STS API calls with AWS CloudTrail](https://docs.aws.amazon.com/IAM/latest/UserGuide/cloudtrail-integration.html)
-- [Working with CloudTrail Event history](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/view-cloudtrail-events.html)
-- [CloudTrail `userIdentity` reference](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-event-reference-user-identity.html)
