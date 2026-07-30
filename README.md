@@ -77,7 +77,6 @@ all be traced later.
 1. Create an S3 bucket using a globally unique name.
 2. Keep **Block all public access** enabled.
 3. Enable default encryption.
-4. Upload a harmless sample file, such as `text.txt`.
 
 **Reason**
 
@@ -97,7 +96,6 @@ unique bucket suffix if it could identify the account.*
 1. Create the `Developers` IAM group.
 2. Create `dev-alex`, `security-auditor`, and `contractor-james`.
 3. Add `dev-alex` to `Developers`.
-4. Do not create console passwords for identities that do not need console access.
 
 **Reason**
 
@@ -174,7 +172,6 @@ caller-permission side.
 
 1. Create one access key for `contractor-james`.
 2. Record only what is required to test the lab.
-3. Never publish the secret access key.
 
 **Reason**
 
@@ -345,7 +342,6 @@ before a human can enter the security-audit role.
 
 1. Confirm role assumption without MFA is denied.
 2. Confirm the intended auditor can assume the role with MFA.
-3. Run `aws sts get-caller-identity` inside the role session.
 
 **Reason**
 
@@ -390,7 +386,7 @@ and active contractor key are no longer present.
 
 <img width="819" height="331" alt="after1" src="https://github.com/user-attachments/assets/2af4966d-fbb2-45a4-a7af-c177b2b24032" />
 
-*Figure 19 — The final redacted report contains zero findings for the scanner’s
+*Figure 19 — The final report contains zero findings for the scanner’s
 defined scope.*
 
 ### Task 16: Capture remediation events
