@@ -77,7 +77,7 @@ all be traced later.
 1. Create an S3 bucket using a globally unique name.
 2. Keep **Block all public access** enabled.
 3. Enable default encryption.
-4. Upload a harmless sample file, such as `sample-transaction.csv`.
+4. Upload a harmless sample file, such as `text.txt`.
 
 **Reason**
 
@@ -373,7 +373,7 @@ python iam_risk_scanner.py --profile finsecure-lab --output reports/after-scan.j
 ```
 
 Review and redact the actual
-[`after-scan.json`](after-scan.json) result before publishing.
+[`after-scan.json`](https://github.com/MacUchegit/AWS-IAM-Access-Review-and-Contractor-Offboarding/blob/main/after-scan.json) result before publishing.
 
 **Expected result**
 
