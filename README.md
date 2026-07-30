@@ -232,6 +232,7 @@ before-remediation report.*
 - High: wildcard S3 permission policy;
 - High: broad role trust;
 - Medium: active contractor access key.
+[Before-remediation Scan report](https://github.com/MacUchegit/AWS-IAM-Access-Review-and-Contractor-Offboarding/blob/main/before-scan.json)
 
 **Reason**
 
