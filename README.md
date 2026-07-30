@@ -22,7 +22,7 @@ or auditor workflows, then retain evidence that the work occurred.
 
 ## Architecture and services
 
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/72da9383-ebe5-43f3-b596-140ea9954260" />
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/5a8e48b3-6c56-4cc7-ab33-378a23aaf10d" />
 
 
 ## Naming used in the lab
