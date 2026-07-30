@@ -32,7 +32,7 @@ or auditor workflows, then retain evidence that the work occurred.
 | S3 bucket | `finsecure-app-data-<unique-suffix>` | Private application data |
 | IAM group | `Developers` | Developer permission assignment |
 | Developer user | `dev-alex` | Example developer identity |
-| Contractor user | `contractor-jane` | Offboarding scenario |
+| Contractor user | `contractor-james` | Offboarding scenario |
 | Auditor user | `security-auditor` | Approved role user |
 | Broad S3 policy | `FinSecure-DeveloperBroadS3` | Deliberately risky baseline |
 | Restricted S3 policy | `FinSecure-DeveloperAppBucketOnly` | Least-privilege replacement |
@@ -95,7 +95,7 @@ unique bucket suffix if it could identify the account.*
 **Action**
 
 1. Create the `Developers` IAM group.
-2. Create `dev-alex`, `security-auditor`, and `contractor-jane`.
+2. Create `dev-alex`, `security-auditor`, and `contractor-james`.
 3. Add `dev-alex` to `Developers`.
 4. Do not create console passwords for identities that do not need console access.
 
@@ -105,10 +105,11 @@ The group keeps developer permissions separate and makes later policy changes
 easy to review. The contractor and auditor remain outside the group because they
 have different business purposes.
 
-![IAM users and group](../evidence/screenshots/04-iam-users-and-group.png)
+<img width="1453" height="453" alt="user-complete" src="https://github.com/user-attachments/assets/6e93c4a1-f8ac-4a72-983d-00296a6a4c98" />
 
-*Figure 03 — The three lab users exist, and `dev-alex` belongs to the Developers
-group. Partly mask generated user IDs.*
+
+*Figure 03 — The three lab users exist (Including the IAM-Admin user), and `dev-alex` belongs to the Developers
+group.*
 
 ### Task 4: Attach an intentionally broad S3 policy
 
@@ -147,7 +148,7 @@ auditor and require MFA.
 <img width="1412" height="631" alt="security-audit-role2" src="https://github.com/user-attachments/assets/e57c0fc5-7c20-434a-a872-48dec845bc1c" />
 
 *Figure 05 — The role trusts the account root principal, representing the entire
-account. The 12-digit account number is partly masked.*
+account.*
 
 ### Task 6: Allow the intended auditor to request the role
 
@@ -171,7 +172,7 @@ caller-permission side.
 
 **Action**
 
-1. Create one access key for `contractor-jane`.
+1. Create one access key for `contractor-james`.
 2. Record only what is required to test the lab.
 3. Never publish the secret access key.
 
@@ -183,8 +184,7 @@ credential, after which the remediation removes it.
 <img width="1381" height="537" alt="contractor-access-keys" src="https://github.com/user-attachments/assets/e23366d2-211b-42be-a0d5-2f2dbd16d3ce" />
 
 
-*Figure 07 — The contractor has an active access key. Publish only a partly masked
-key ID such as `AKIAXXXXXXXXXXXXXXXX`; remove the secret completely.*
+*Figure 07 — The contractor has an active access key*
 
 ---
 
@@ -255,8 +255,7 @@ only if it blocks unintended access while preserving legitimate work.
 
 <img width="930" height="473" alt="security-audit-role-achieved" src="https://github.com/user-attachments/assets/8eed5623-a851-482b-a3d0-6da9ca1f2fd0" />
 
-*Figure 10 — `get-caller-identity` shows an assumed-role session. Remove temporary
-credentials and session tokens completely.*
+*Figure 10 — `get-caller-identity` shows an assumed-role session.*
 
 ### Task 11: Capture creation events in CloudTrail
 
@@ -305,7 +304,7 @@ broad policy.*
 
 **Action**
 
-1. Confirm `contractor-jane` is the intended lab identity.
+1. Confirm `contractor-james` is the intended lab identity.
 2. Change the access key status to **Inactive**.
 3. Confirm there is no dependency on the key.
 4. Delete the access key.
