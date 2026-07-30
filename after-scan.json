@@ -1,0 +1,12 @@
+{
+  "scan_date": "2026-07-29",
+  "account_id": "026651348779",
+  "summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "total": 0
+  },
+  "findings": [],
+  "note": "Review every finding before making changes."
+}

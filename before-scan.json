@@ -1,0 +1,41 @@
+{
+  "scan_date": "2026-07-29",
+  "account_id": "026651348779",
+  "summary": {
+    "critical": 0,
+    "high": 2,
+    "medium": 2,
+    "total": 4
+  },
+  "findings": [
+    {
+      "resource": "policy/FinSecure-DeveloperBroadS3",
+      "risk": "Permission policy contains wildcard access",
+      "severity": "High",
+      "evidence": "Statement 1: Action=['s3:*'], Resource=['*']",
+      "recommendation": "Replace wildcard actions with the required actions. Use specific resource ARNs where AWS supports them."
+    },
+    {
+      "resource": "role/SecurityAuditRole",
+      "risk": "Role trust policy allows a broad principal",
+      "severity": "High",
+      "evidence": "Statement 1: Principal={'AWS': 'arn:aws:iam::026651348779:root'}",
+      "recommendation": "Trust only the intended user or role. Require MFA when a human user assumes the role."
+    },
+    {
+      "resource": "user/contractor-james",
+      "risk": "IAM user has an active access key",
+      "severity": "Medium",
+      "evidence": "Active key ending in 5UAN; created 2026-07-29T13:50:09+00:00",
+      "recommendation": "Confirm who owns the key and whether it is still needed. Deactivate and delete unused keys."
+    },
+    {
+      "resource": "user/contractor-james",
+      "risk": "IAM user has an active access key",
+      "severity": "Medium",
+      "evidence": "Active key ending in V6UF; created 2026-07-29T13:48:40+00:00",
+      "recommendation": "Confirm who owns the key and whether it is still needed. Deactivate and delete unused keys."
+    }
+  ],
+  "note": "Review every finding before making changes."
+}
