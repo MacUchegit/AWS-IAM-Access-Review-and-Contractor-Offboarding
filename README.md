@@ -380,7 +380,7 @@ python iam_risk_scanner.py --profile finsecure-lab --output reports/after-scan.j
 ```
 
 Review the result before publishing. The example is
-[`reports/after-scan.example.json`](../reports/after-scan.example.json).
+[`reports/after-scan.example.json`](https://github.com/MacUchegit/AWS-IAM-Access-Review-and-Contractor-Offboarding/blob/main/before-scan.json).
 
 **Expected result**
 
