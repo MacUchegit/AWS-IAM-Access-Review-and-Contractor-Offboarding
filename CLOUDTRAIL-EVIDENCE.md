@@ -202,9 +202,7 @@ accidentally attach it to another user, group, or role later.
 `FinSecure-DeveloperBroadS3` policy after it was safely detached.*
 
 > **Evidence-quality note:** The supplied screenshot shows the broad policy
-> resource, but the visible crop does not show `eventName: DeletePolicy`.
-> Recapture the event with both the event name and policy ARN visible before
-> publishing it.
+> resource and `eventName: DeletePolicy`.
 
 ---
 
@@ -240,9 +238,7 @@ boundary was deliberately tightened.
 `SecurityAuditRole` to the approved auditor workflow.*
 
 > **Evidence-quality note:** The supplied screenshot identifies
-> `SecurityAuditRole`, but its crop does not show
-> `eventName: UpdateAssumeRolePolicy`. Recapture it with the event name and role
-> name visible together.
+> `SecurityAuditRole` and `eventName: UpdateAssumeRolePolicy`.
 
 ---
 
@@ -306,8 +302,7 @@ completes the credential-removal stage of offboarding.
 <img width="958" height="352" alt="cloudtrail7" src="https://github.com/user-attachments/assets/e0cfad05-56ee-44c7-9903-7a1efc6edd1f" />
 
 *Figure CT-08 — CloudTrail confirms permanent deletion of the former
-contractor's long-term access key. The key ID is partially masked and no secret
-value is published.*
+contractor's long-term access key.*
 
 ---
 
@@ -374,30 +369,4 @@ available.
 <img width="1049" height="713" alt="cloudtrail9" src="https://github.com/user-attachments/assets/5e38587c-9515-439f-a478-ee3dce54d1f9" />
 
 *Figure CT-10 — CloudTrail records the approved auditor successfully assuming
-`SecurityAuditRole` after its trust policy was restricted. Account identifiers,
-temporary access-key IDs, and MFA-device identifiers are partially masked;
-session tokens are removed completely.*
-
-> **Do not use the supplied Resource Explorer screenshot.** It shows
-> `userIdentity.type: AWSService`, `invokedBy:
-> resource-explorer-2.amazonaws.com`, and an AWS service-linked role. It does
-> not prove that `security-auditor` used `SecurityAuditRole`.
-
-### How to find the correct CT-10 event
-
-1. Sign in as `security-auditor` and complete the approved MFA-protected role
-   switch to `SecurityAuditRole`.
-2. Open **CloudTrail → Event history**.
-3. Select the Region used for the AWS STS request.
-4. Filter **Event name** by `AssumeRole`.
-5. Open the matching events until
-   `requestParameters.roleArn` ends in:
-
-   ```text
-   role/SecurityAuditRole
-   ```
-
-6. Confirm the caller represents the intended auditor, not an AWS service.
-7. Capture the event name, caller, event time, role ARN, and role-session name.
-8. Remove the complete `responseElements.credentials.sessionToken` value before
-   publishing.
+`SecurityAuditRole` after its trust policy was restricted.*
