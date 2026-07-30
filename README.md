@@ -248,7 +248,7 @@ finding.*
 
 Capture `CreateUser`, `CreateAccessKey`, `CreatePolicy`, `AttachGroupPolicy`,
 and `CreateRole`. The detailed procedure and screenshot captions are in
-[CLOUDTRAIL-EVIDENCE.md](CLOUDTRAIL-EVIDENCE.md).
+[CLOUDTRAIL-EVIDENCE.md](https://github.com/MacUchegit/AWS-IAM-Access-Review-and-Contractor-Offboarding/blob/main/CLOUDTRAIL-EVIDENCE.md).
 
 **Reason**
 
@@ -398,7 +398,7 @@ Capture `CreatePolicy`, `AttachGroupPolicy`, `DetachGroupPolicy`, `DeletePolicy`
 `UpdateAssumeRolePolicy`, `UpdateAccessKey`, `DeleteAccessKey`, `DeleteUser`, and
 the successful post-remediation `AssumeRole`. The detailed procedure and
 screenshot captions are in
-[CLOUDTRAIL-EVIDENCE.md](CLOUDTRAIL-EVIDENCE.md).
+[CLOUDTRAIL-EVIDENCE.md](https://github.com/MacUchegit/AWS-IAM-Access-Review-and-Contractor-Offboarding/blob/main/CLOUDTRAIL-EVIDENCE.md).
 
 **Reason**
 
