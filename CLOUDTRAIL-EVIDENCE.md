@@ -1,7 +1,7 @@
 # AWS CloudTrail Audit Evidence
 
 This evidence register supports the
-[AWS IAM Access Review and Contractor Offboarding](PROJECT-WALKTHROUGH.md)
+[AWS IAM Access Review and Contractor Offboarding](https://github.com/MacUchegit/AWS-IAM-Access-Review-and-Contractor-Offboarding/tree/main)
 project. It shows that the IAM remediation was not merely described: AWS
 CloudTrail independently recorded the policy changes, credential removal,
 identity deletion, and approved role use.
